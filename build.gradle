@@ -1,0 +1,73 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '7.1.2'
+  id 'java'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+version = '0.1'
+group = 'com.plushnode'
+
+ext {
+  main = 'com.plushnode.gungame.GunGamePlugin'
+}
+
+repositories {
+  mavenCentral()
+  mavenLocal()
+  maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+  maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+  maven { url "https://repo.dmulloy2.net/nexus/repository/public/" }
+  maven { url "https://repo.md-5.net/content/groups/public/" }
+  flatDir {
+    dirs 'libs'
+  }
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs = ['src/main/java']
+    }
+    resources {
+      srcDirs = ['src/main/resources']
+    }
+  }
+}
+
+processResources {
+  filter {
+    line ->
+    line
+    .replace('${name}', project.name)
+    .replace('${version}', project.version)
+    .replace('${main}', project.ext.main)
+  }
+}
+
+jar {
+  manifest {
+    attributes 'Implementation-Title': project.name,
+               'Implementation-Version': project.version
+  }
+}
+
+shadowJar {
+  configurations = [project.configurations.shadow]
+
+  relocate "org.apache", "com.plushnode.gungame.internal.apache"
+
+  classifier = null
+}
+
+dependencies {
+  compileOnly 'org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT'
+  shadow 'org.apache.commons:commons-math3:3.5'
+}
+
+build.dependsOn shadowJar
+
+buildDir = 'bin'

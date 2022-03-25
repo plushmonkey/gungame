@@ -1,0 +1,9 @@
+name: ${name}
+author: plushmonkey
+version: ${version}
+main: ${main}
+api-version: 1.13
+commands:
+  gungame:
+    description: GunGame commands
+    aliases: [gg]
