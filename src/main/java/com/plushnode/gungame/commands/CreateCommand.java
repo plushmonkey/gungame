@@ -69,6 +69,12 @@ public class CreateCommand implements MultiplexableCommand {
             applyWeapon(item, "Grenade", true);
 
             player.getInventory().addItem(item);
+        } else if ("flamethrower".equalsIgnoreCase(weaponName)) {
+            ItemStack item = new ItemStack(Material.BLAZE_ROD, 1);
+
+            applyWeapon(item, "Flamethrower", true);
+
+            player.getInventory().addItem(item);
         }
 
         return true;

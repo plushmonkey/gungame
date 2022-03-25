@@ -3,10 +3,7 @@ package com.plushnode.gungame.listeners;
 import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.attachments.ScopeAttachment;
-import com.plushnode.gungame.weapons.AK47;
-import com.plushnode.gungame.weapons.Grenade;
-import com.plushnode.gungame.weapons.Shotgun;
-import com.plushnode.gungame.weapons.Weapon;
+import com.plushnode.gungame.weapons.*;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -117,6 +114,8 @@ public class PlayerListener implements Listener {
             return new ScopeAttachment();
         } else if ("grenade".equalsIgnoreCase(weaponType)) {
             return new Grenade();
+        } else if ("flamethrower".equalsIgnoreCase(weaponType)) {
+            return new Flamethrower();
         }
 
         return null;

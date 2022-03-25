@@ -16,6 +16,8 @@ import org.bukkit.util.Vector;
 public class Shotgun extends AbstractGun {
     @Override
     public boolean activate(Player player, Trigger trigger) {
+        if (trigger != Trigger.LeftClick && trigger != Trigger.RightClick) return false;
+
         GunPlayer gunPlayer = GunGamePlugin.plugin.getPlayerManager().getPlayer(player);
         if (gunPlayer == null || gunPlayer.isOnCooldown(getName())) return false;
 
@@ -23,7 +25,7 @@ public class Shotgun extends AbstractGun {
 
         Bullet.Config config = new Bullet.Config();
         config.speed = 12.0;
-        config.range = 45.0;
+        config.range = 30.0;
         config.damage = 6.0;
         config.headshotDamage = 10.0;
         config.swimmingDamage = 10.0;
@@ -38,7 +40,7 @@ public class Shotgun extends AbstractGun {
             location = player.getLocation().clone().add(0, 1.3, 0);
         }
 
-        RealDistribution distribution = new NormalDistribution(0.0f, 3.0f);
+        RealDistribution distribution = new NormalDistribution(0.0f, 2.5f);
         Vector3D view = VectorUtil.adapt(location.getDirection());
         Vector3D eye = VectorUtil.adapt(location.toVector());
         Vector3D hit = eye.add(view.scalarMultiply(config.range));

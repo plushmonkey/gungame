@@ -44,8 +44,8 @@ public class AK47 extends AbstractGun {
 
         config.speed = 14.0;
         config.range = 120.0;
-        config.damage = 4.0;
-        config.headshotDamage = 14.0;
+        config.damage = 3.0;
+        config.headshotDamage = 8.0;
         config.swimmingDamage = 6.0;
 
         bullets.add(new Bullet(config, player, getEyeLocation(player), player.getEyeLocation().getDirection()));
@@ -53,7 +53,7 @@ public class AK47 extends AbstractGun {
         applyRecoil(0.1f);
         this.lastBulletTime = System.currentTimeMillis();
 
-        player.getWorld().playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1.5f, 5.5f);
+        player.getWorld().playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 2.0f, 5.5f);
         Vector worldUp = new Vector(0, 1, 0);
         Vector right = player.getEyeLocation().getDirection().clone().crossProduct(worldUp).normalize();
         Location smokeLocation = player.getEyeLocation().clone().add(right.clone().multiply(1.5)).add(player.getEyeLocation().getDirection().clone().multiply(1.8));

@@ -12,6 +12,7 @@ public class ScopeAttachment implements Weapon {
     private Player player;
     private int slot;
     private int zoomAmount = 5;
+    private long lastApplicationTime;
 
     @Override
     public boolean activate(Player player, Trigger trigger) {
@@ -31,14 +32,30 @@ public class ScopeAttachment implements Weapon {
         return true;
     }
 
+    private void applyEffect() {
+        long time = System.currentTimeMillis();
+
+        if (time > lastApplicationTime + 500) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100000, -zoomAmount, true));
+            lastApplicationTime = time;
+        }
+    }
+
+    private boolean needsEffect() {
+        if (!player.hasPotionEffect(PotionEffectType.SPEED)) return true;
+
+        PotionEffect current = player.getPotionEffect(PotionEffectType.SPEED);
+        return current == null || current.getAmplifier() != -zoomAmount;
+    }
+
     @Override
     public UpdateResult update() {
         if (!player.isOnline() || player.isDead() || player.getInventory().getHeldItemSlot() != this.slot) {
             return UpdateResult.Remove;
         }
 
-        if (!player.hasPotionEffect(PotionEffectType.SPEED)) {
-            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100000, -zoomAmount, true));
+        if (needsEffect()) {
+            applyEffect();
         }
 
         return UpdateResult.Continue;

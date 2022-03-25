@@ -200,7 +200,7 @@ public class Grenade implements Weapon {
 
                 for (Entity e : WorldUtil.getEntitiesAroundPoint(location, size)) {
                     if (e instanceof LivingEntity) {
-                        ((LivingEntity) e).damage(damage);
+                        ((LivingEntity) e).damage(damage, player);
                     }
                 }
             }
