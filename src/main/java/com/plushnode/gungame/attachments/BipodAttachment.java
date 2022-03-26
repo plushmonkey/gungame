@@ -45,6 +45,7 @@ public class BipodAttachment implements Weapon {
         }, 5);
 
         currentBlock = player.getLocation().getBlock();
+        player.setSwimming(true);
 
         return true;
     }
@@ -80,6 +81,7 @@ public class BipodAttachment implements Weapon {
     @Override
     public void destroy() {
         player.sendBlockChange(headBlock.getLocation(), Material.AIR.createBlockData());
+        player.setSwimming(false);
     }
 
     @Override

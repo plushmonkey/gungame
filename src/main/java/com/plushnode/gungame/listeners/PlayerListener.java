@@ -13,12 +13,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -40,6 +38,21 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         GunGamePlugin.plugin.getDamageTracker().handleDeath(event);
+    }
+
+    @EventHandler
+    public void onEntityToggleSwim(EntityToggleSwimEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+
+        Player player = (Player)event.getEntity();
+
+        if (!event.isSwimming()) {
+            BipodAttachment bipod = GunGamePlugin.plugin.getInstanceManager().getFirstInstance(player, BipodAttachment.class);
+
+            if (bipod != null) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler
