@@ -15,11 +15,9 @@ public class ListCommand implements MultiplexableCommand {
     @Override
     public boolean execute(CommandSender sender, String[] args) {
         // TODO: Pull from registry
-        String[] weapons = {"Shotgun, AK47, Grenade", "Flamethrower"};
+        String[] weapons = {"Shotgun, AK47, Grenade", "Flamethrower", "Sniper"};
 
         StringBuilder sb = new StringBuilder();
-
-        sb.append("Weapons: ");
 
         for (int i = 0; i < weapons.length; ++i) {
             if (i > 0) {

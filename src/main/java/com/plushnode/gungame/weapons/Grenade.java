@@ -5,6 +5,7 @@ import com.plushnode.gungame.GunPlayer;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.UpdateResult;
 import com.plushnode.gungame.physics.Particle;
+import com.plushnode.gungame.util.PlayerUtil;
 import com.plushnode.gungame.util.VectorUtil;
 import com.plushnode.gungame.util.WorldUtil;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -149,7 +150,7 @@ public class Grenade implements Weapon {
             this.throwTime = System.currentTimeMillis();
 
             Vector3D direction = VectorUtil.adapt(player.getEyeLocation().getDirection());
-            Vector3D position = VectorUtil.adapt(player.getEyeLocation().toVector());
+            Vector3D position = VectorUtil.adapt(PlayerUtil.getEye(player).toVector());
             GrenadeParticle particle = new GrenadeParticle(position, 1.0);
 
             double force = 50.0 + (750.0 * strength);

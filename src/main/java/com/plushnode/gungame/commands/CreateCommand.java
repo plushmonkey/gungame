@@ -75,6 +75,22 @@ public class CreateCommand implements MultiplexableCommand {
             applyWeapon(item, "Flamethrower", true);
 
             player.getInventory().addItem(item);
+        } else if ("sniper".equalsIgnoreCase(weaponName)) {
+            ItemStack item = new ItemStack(Material.STONE_HOE, 1);
+
+            applyWeapon(item, "Sniper", true);
+            applyWeapon(item, "NightScope", false);
+            //applyWeapon(item, "Bipod", false);
+
+            player.getInventory().addItem(item);
+        } else if ("bipodsniper".equalsIgnoreCase(weaponName)) {
+            ItemStack item = new ItemStack(Material.STONE_HOE, 1);
+
+            applyWeapon(item, "Sniper", true);
+            applyWeapon(item, "NightScope", false);
+            applyWeapon(item, "Bipod", false);
+
+            player.getInventory().addItem(item);
         }
 
         return true;

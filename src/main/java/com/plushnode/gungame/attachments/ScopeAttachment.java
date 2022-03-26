@@ -12,8 +12,15 @@ import org.bukkit.potion.PotionEffectType;
 public class ScopeAttachment implements Weapon {
     private Player player;
     private int slot;
-    private int zoomAmount = 5;
-    private long lastApplicationTime;
+    private int zoomAmount;
+    private boolean nightVision;
+    private long lastZoomTime;
+    private long lastNightVisionTime;
+
+    public ScopeAttachment(int zoomAmount, boolean nightVision) {
+        this.zoomAmount = zoomAmount;
+        this.nightVision = nightVision;
+    }
 
     @Override
     public boolean activate(Player player, Trigger trigger) {
@@ -33,20 +40,33 @@ public class ScopeAttachment implements Weapon {
         return true;
     }
 
-    private void applyEffect() {
+    private void applyZoom() {
         long time = System.currentTimeMillis();
 
-        if (time > lastApplicationTime + 500) {
+        if (time > lastZoomTime + 500) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 100000, -zoomAmount, true));
-            lastApplicationTime = time;
+            lastZoomTime = time;
         }
     }
 
-    private boolean needsEffect() {
+    private boolean needsZoom() {
         if (!player.hasPotionEffect(PotionEffectType.SPEED)) return true;
 
         PotionEffect current = player.getPotionEffect(PotionEffectType.SPEED);
         return current == null || current.getAmplifier() != -zoomAmount;
+    }
+
+    private void applyNightVision() {
+        long time = System.currentTimeMillis();
+
+        if (time > lastNightVisionTime + 500) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 100000, 1, true));
+            lastNightVisionTime = time;
+        }
+    }
+
+    private boolean needsNightVision() {
+        return this.nightVision && !player.hasPotionEffect(PotionEffectType.NIGHT_VISION);
     }
 
     @Override
@@ -60,8 +80,12 @@ public class ScopeAttachment implements Weapon {
         }
 
 
-        if (needsEffect()) {
-            applyEffect();
+        if (needsZoom()) {
+            applyZoom();
+        }
+
+        if (needsNightVision()) {
+            applyNightVision();
         }
 
         return UpdateResult.Continue;
@@ -70,6 +94,10 @@ public class ScopeAttachment implements Weapon {
     @Override
     public void destroy() {
         player.removePotionEffect(PotionEffectType.SPEED);
+
+        if (this.nightVision) {
+            player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+        }
     }
 
     @Override

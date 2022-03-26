@@ -4,6 +4,7 @@ import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 
 import com.plushnode.gungame.UpdateResult;
+import com.plushnode.gungame.util.PlayerUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -54,7 +55,7 @@ public class AK47 extends AbstractGun {
         config.swimmingDamage = 6.0;
         config.clearNoTicks = false;
 
-        bullets.add(new Bullet(this, config, player, getEyeLocation(player), player.getEyeLocation().getDirection()));
+        bullets.add(new Bullet(this, config, player, PlayerUtil.getEye(player), player.getEyeLocation().getDirection()));
 
         applyRecoil(0.1f);
         this.lastBulletTime = System.currentTimeMillis();
