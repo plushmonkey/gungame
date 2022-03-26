@@ -4,6 +4,7 @@ import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.UpdateResult;
 import com.plushnode.gungame.weapons.Weapon;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -53,6 +54,11 @@ public class ScopeAttachment implements Weapon {
         if (!player.isOnline() || player.isDead() || player.getInventory().getHeldItemSlot() != this.slot) {
             return UpdateResult.Remove;
         }
+
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            return UpdateResult.Remove;
+        }
+
 
         if (needsEffect()) {
             applyEffect();

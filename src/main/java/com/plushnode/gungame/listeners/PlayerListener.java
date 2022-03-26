@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -27,6 +28,14 @@ public class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         GunGamePlugin.plugin.getPlayerManager().destroyPlayer(event.getPlayer());
         GunGamePlugin.plugin.getInstanceManager().destroyPlayerInstances(event.getPlayer());
+
+        // Not really necessary, but remove them just in case there's an accidental accumulation.
+        GunGamePlugin.plugin.getDamageTracker().clearPlayer(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        GunGamePlugin.plugin.getDamageTracker().handleDeath(event);
     }
 
     @EventHandler

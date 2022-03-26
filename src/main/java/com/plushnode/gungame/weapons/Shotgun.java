@@ -26,9 +26,10 @@ public class Shotgun extends AbstractGun {
         Bullet.Config config = new Bullet.Config();
         config.speed = 12.0;
         config.range = 30.0;
-        config.damage = 6.0;
-        config.headshotDamage = 10.0;
-        config.swimmingDamage = 10.0;
+        config.damage = 4.0;
+        config.headshotDamage = 8.0;
+        config.swimmingDamage = 6.0;
+        config.clearNoTicks = true;
 
         gunPlayer.addCooldown(getName(), 1500);
 
@@ -50,7 +51,7 @@ public class Shotgun extends AbstractGun {
             Vector3D randomHit = hit.add(randomDirection);
             Vector3D direction = randomHit.subtract(eye).normalize();
 
-            bullets.add(new Bullet(config, player, location, VectorUtil.adapt(direction)));
+            bullets.add(new Bullet(this, config, player, location, VectorUtil.adapt(direction)));
         }
 
         Vector worldUp = new Vector(0, 1, 0);

@@ -1,5 +1,6 @@
 package com.plushnode.gungame.weapons;
 
+import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.UpdateResult;
 import com.plushnode.gungame.physics.PhysicsSystem;
@@ -8,6 +9,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.BoundingBox;
@@ -35,21 +37,24 @@ public class Flamethrower implements Weapon {
     private Renderer renderer = new DensityRenderer();
     private double maxDensity;
     private long lastSoundTime;
+    private int slot;
+    private Map<Entity, Long> damageTimers = new HashMap<>();
 
     @Override
     public boolean activate(Player player, Trigger trigger) {
         if (trigger != Trigger.Sneak) return false;
 
         this.player = player;
+        this.slot = player.getInventory().getHeldItemSlot();
 
         return true;
     }
 
     @Override
     public UpdateResult update() {
-        if (!player.isSneaking()) {
-            return UpdateResult.Remove;
-        }
+        if (!player.isSneaking()) return UpdateResult.Remove;
+        if (player.getInventory().getHeldItemSlot() != slot) return UpdateResult.Remove;
+        if (player.getGameMode() == GameMode.SPECTATOR) return UpdateResult.Remove;
 
         long time = System.currentTimeMillis();
 
@@ -80,10 +85,20 @@ public class Flamethrower implements Weapon {
                 if (entity.getBoundingBox().overlaps(collider)) {
                     double percent = info.density / maxDensity;
 
-                    int ticks = 20 + (int)(percent * 60);
+                    int ticks = 20 + (int)(percent * 80);
+                    if (ticks > 80) ticks = 80;
 
                     if (entity.getFireTicks() < ticks) {
                         entity.setFireTicks(ticks);
+                    }
+
+                    Long lastDamageTime = damageTimers.get(entity);
+
+                    if (lastDamageTime == null || time - lastDamageTime >= 1000) {
+                        ((LivingEntity) entity).setNoDamageTicks(0);
+                        GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, this, 4.0);
+
+                        damageTimers.put(entity, time);
                     }
                 }
             }

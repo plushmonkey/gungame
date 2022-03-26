@@ -15,6 +15,7 @@ public class GunGamePlugin extends JavaPlugin {
     private PlayerManager playerManager;
     private InstanceManager instanceManager;
     private PhysicsSystem physicsSystem;
+    private DamageTracker damageTracker;
 
     @Override
     public void onEnable() {
@@ -23,6 +24,7 @@ public class GunGamePlugin extends JavaPlugin {
         this.playerManager = new PlayerManager();
         this.instanceManager = new InstanceManager();
         this.physicsSystem = new PhysicsSystem();
+        this.damageTracker = new DamageTracker();
 
         this.multiplexer = new CommandMultiplexer("gg");
 
@@ -49,6 +51,10 @@ public class GunGamePlugin extends JavaPlugin {
 
     public PlayerManager getPlayerManager() {
         return this.playerManager;
+    }
+
+    public DamageTracker getDamageTracker() {
+        return this.damageTracker;
     }
 
     public InstanceManager getInstanceManager() {

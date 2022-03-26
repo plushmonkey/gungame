@@ -4,6 +4,7 @@ import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 
 import com.plushnode.gungame.UpdateResult;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -22,6 +23,10 @@ public class AK47 extends AbstractGun {
         this.player = player;
 
         if (trigger == Trigger.RightClick) {
+            if (player.getGameMode() == GameMode.SPECTATOR) {
+                return false;
+            }
+
             AK47 instance = GunGamePlugin.plugin.getInstanceManager().getFirstInstance(player, AK47.class);
 
             if (instance != null) {
@@ -44,11 +49,12 @@ public class AK47 extends AbstractGun {
 
         config.speed = 14.0;
         config.range = 120.0;
-        config.damage = 3.0;
-        config.headshotDamage = 8.0;
+        config.damage = 4.0;
+        config.headshotDamage = 10.0;
         config.swimmingDamage = 6.0;
+        config.clearNoTicks = false;
 
-        bullets.add(new Bullet(config, player, getEyeLocation(player), player.getEyeLocation().getDirection()));
+        bullets.add(new Bullet(this, config, player, getEyeLocation(player), player.getEyeLocation().getDirection()));
 
         applyRecoil(0.1f);
         this.lastBulletTime = System.currentTimeMillis();
@@ -64,6 +70,7 @@ public class AK47 extends AbstractGun {
     @Override
     public UpdateResult update() {
         if (!player.isOnline()) return UpdateResult.Remove;
+        if (player.getGameMode() == GameMode.SPECTATOR) return UpdateResult.Remove;
 
         long time = System.currentTimeMillis();
 

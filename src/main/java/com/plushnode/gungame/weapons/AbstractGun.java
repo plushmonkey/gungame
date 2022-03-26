@@ -2,6 +2,7 @@ package com.plushnode.gungame.weapons;
 
 import com.plushnode.gungame.UpdateResult;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -35,9 +36,8 @@ public abstract class AbstractGun implements Weapon {
 
     @Override
     public UpdateResult update() {
-        if (!player.isOnline()) {
-            return UpdateResult.Remove;
-        }
+        if (!player.isOnline()) return UpdateResult.Remove;
+        if (player.getGameMode() == GameMode.SPECTATOR) return UpdateResult.Remove;
 
         bullets.removeIf(Bullet::update);
 

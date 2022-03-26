@@ -1,5 +1,6 @@
 package com.plushnode.gungame.weapons;
 
+import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.collision.CollisionDetector;
 import com.plushnode.gungame.collision.Ray;
 import com.plushnode.gungame.collision.RayCaster;
@@ -19,6 +20,7 @@ import java.util.Collections;
 public class Bullet {
     private static AABB HEAD_BOUNDS = new AABB(new Vector3D(-0.3D, 0.0D, -0.3D), new Vector3D(0.3D, 0.4D, 0.3D));
 
+    private Weapon weapon;
     private Player shooter;
     private Location location;
     private Location origin;
@@ -26,7 +28,8 @@ public class Bullet {
 
     protected Config config;
 
-    public Bullet(Config config, Player shooter, Location location, Vector direction) {
+    public Bullet(Weapon weapon, Config config, Player shooter, Location location, Vector direction) {
+        this.weapon = weapon;
         this.location = location.clone();
         this.origin = this.location.clone();
         this.config = config;
@@ -96,7 +99,11 @@ public class Bullet {
                     damage = config.swimmingDamage;
                 }
 
-                ((LivingEntity)entity).damage(damage, shooter);
+                GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, weapon, damage);
+
+                if (config.clearNoTicks) {
+                    ((LivingEntity)entity).setNoDamageTicks(0);
+                }
 
                 renderBlood(hitLocation, bloodAmount);
 
@@ -142,5 +149,6 @@ public class Bullet {
         double damage;
         double headshotDamage;
         double swimmingDamage;
+        boolean clearNoTicks;
     }
 }

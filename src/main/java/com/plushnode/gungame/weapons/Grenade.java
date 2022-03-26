@@ -8,10 +8,7 @@ import com.plushnode.gungame.physics.Particle;
 import com.plushnode.gungame.util.VectorUtil;
 import com.plushnode.gungame.util.WorldUtil;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -68,6 +65,10 @@ public class Grenade implements Weapon {
     @Override
     public UpdateResult update() {
         if (!player.getWorld().equals(this.world)) {
+            return UpdateResult.Remove;
+        }
+
+        if (player.getGameMode() == GameMode.SPECTATOR) {
             return UpdateResult.Remove;
         }
 
@@ -195,14 +196,14 @@ public class Grenade implements Weapon {
             for (GrenadeParticle particle : particles) {
                 Location location = new Location(world, particle.getPosition().getX(), particle.getPosition().getY(), particle.getPosition().getZ());
 
-                world.createExplosion(location, 0.0f);
-                render(location);
-
                 for (Entity e : WorldUtil.getEntitiesAroundPoint(location, size)) {
                     if (e instanceof LivingEntity) {
-                        ((LivingEntity) e).damage(damage, player);
+                        GunGamePlugin.plugin.getDamageTracker().applyDamage(e, Grenade.this, damage);
                     }
                 }
+
+                world.createExplosion(location, 0.0f, false, false, player);
+                render(location);
             }
         }
 
