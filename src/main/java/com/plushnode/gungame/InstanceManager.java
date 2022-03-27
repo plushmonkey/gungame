@@ -176,7 +176,11 @@ public class InstanceManager {
             List<Weapon> instances = entry.getValue();
 
             for (Weapon weapon : instances) {
-                weapon.destroy();
+                try {
+                    weapon.destroy();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             instances.clear();

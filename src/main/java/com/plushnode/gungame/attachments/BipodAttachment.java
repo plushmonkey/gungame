@@ -19,6 +19,7 @@ public class BipodAttachment implements Weapon {
 
     private Player player;
     private Block headBlock;
+    private BlockData previousData;
     private Block currentBlock;
     private int slot;
     private World world;
@@ -40,11 +41,9 @@ public class BipodAttachment implements Weapon {
         this.slot = player.getInventory().getHeldItemSlot();
         this.headBlock = this.player.getEyeLocation().getBlock();
 
-        if (headBlock.getType() != Material.AIR) return false;
+        if (!headBlock.isPassable()) return false;
 
-        Bukkit.getScheduler().runTaskLater(GunGamePlugin.plugin, () -> {
-            player.sendBlockChange(headBlock.getLocation(), BLOCKER_DATA);
-        }, 5);
+        Bukkit.getScheduler().runTaskLater(GunGamePlugin.plugin, this::setHeadBlock, 5);
 
         currentBlock = player.getLocation().getBlock();
         player.setSwimming(true);
@@ -65,6 +64,17 @@ public class BipodAttachment implements Weapon {
         return true;
     }
 
+    private void setHeadBlock() {
+        previousData = headBlock.getBlockData().clone();
+        player.sendBlockChange(headBlock.getLocation(), BLOCKER_DATA);
+    }
+
+    private void revertHeadBlock() {
+        if (previousData != null) {
+            player.sendBlockChange(headBlock.getLocation(), previousData);
+        }
+    }
+
     @Override
     public UpdateResult update() {
         if (!player.isOnline() || player.isDead() || player.getInventory().getHeldItemSlot() != this.slot) {
@@ -80,9 +90,9 @@ public class BipodAttachment implements Weapon {
         }
 
         if (!player.getLocation().getBlock().equals(currentBlock)) {
-            player.sendBlockChange(headBlock.getLocation(), Material.AIR.createBlockData());
+            revertHeadBlock();
             headBlock = player.getLocation().getBlock().getRelative(BlockFace.UP);
-            player.sendBlockChange(headBlock.getLocation(), BLOCKER_DATA);
+            setHeadBlock();
             currentBlock = player.getLocation().getBlock();
         }
 
@@ -95,7 +105,8 @@ public class BipodAttachment implements Weapon {
 
     @Override
     public void destroy() {
-        player.sendBlockChange(headBlock.getLocation(), Material.AIR.createBlockData());
+        revertHeadBlock();
+
         player.setSwimming(false);
 
         player.removePassenger(armorStand);
