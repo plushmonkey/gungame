@@ -54,6 +54,7 @@ public class AK47 extends AbstractGun {
         config.headshotDamage = 10.0;
         config.swimmingDamage = 6.0;
         config.clearNoTicks = false;
+        config.radius = 0.3;
 
         bullets.add(new Bullet(this, config, player, PlayerUtil.getEye(player), player.getEyeLocation().getDirection()));
 

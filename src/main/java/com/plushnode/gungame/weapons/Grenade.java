@@ -1,9 +1,6 @@
 package com.plushnode.gungame.weapons;
 
-import com.plushnode.gungame.GunGamePlugin;
-import com.plushnode.gungame.GunPlayer;
-import com.plushnode.gungame.Trigger;
-import com.plushnode.gungame.UpdateResult;
+import com.plushnode.gungame.*;
 import com.plushnode.gungame.physics.Particle;
 import com.plushnode.gungame.util.PlayerUtil;
 import com.plushnode.gungame.util.VectorUtil;
@@ -199,7 +196,7 @@ public class Grenade implements Weapon {
 
                 for (Entity e : WorldUtil.getEntitiesAroundPoint(location, size)) {
                     if (e instanceof LivingEntity) {
-                        GunGamePlugin.plugin.getDamageTracker().applyDamage(e, Grenade.this, damage);
+                        GunGamePlugin.plugin.getDamageTracker().applyDamage(e, new DamageTracker.DamageEvent(Grenade.this, damage, false));
                     }
                 }
 

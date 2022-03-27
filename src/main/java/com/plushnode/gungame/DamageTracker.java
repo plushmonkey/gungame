@@ -10,14 +10,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DamageTracker {
-    private Map<Player, Weapon> currentDamage = new HashMap<>();
+    private Map<Player, DamageEvent> currentDamage = new HashMap<>();
 
-    public void applyDamage(Entity entity, Weapon weapon, double damage) {
+    public void applyDamage(Entity entity, DamageEvent event) {
         if (entity instanceof Player) {
-            currentDamage.put((Player)entity, weapon);
+            currentDamage.put((Player)entity, event);
         }
 
-        ((LivingEntity)entity).damage(damage, weapon.getPlayer());
+        ((LivingEntity)entity).damage(event.damage, event.weapon.getPlayer());
 
         if (entity instanceof Player) {
             currentDamage.remove(entity);
@@ -29,17 +29,35 @@ public class DamageTracker {
     }
 
     public void handleDeath(PlayerDeathEvent event) {
-        Weapon weapon = currentDamage.get(event.getEntity());
+        DamageEvent damageEvent = currentDamage.get(event.getEntity());
 
-        if (weapon == null) {
+        if (damageEvent == null) {
             return;
         }
 
         String name = event.getEntity().getName();
-        String weaponName = weapon.getName();
-        String shooter = weapon.getPlayer().getName();
+        String weaponName = damageEvent.weapon.getName();
+        String shooter = damageEvent.weapon.getPlayer().getName();
 
-        String message = name + " was slain by " + shooter + " using [" + weaponName + "]";
+        String headshotIndicator = "";
+
+        if (damageEvent.headshot) {
+            headshotIndicator = "*";
+        }
+
+        String message = name + " was slain by " + shooter + " using [" + weaponName + headshotIndicator + "]";
         event.setDeathMessage(message);
+    }
+
+    public static class DamageEvent {
+        Weapon weapon;
+        double damage;
+        boolean headshot;
+
+        public DamageEvent(Weapon weapon, double damage, boolean headshot) {
+            this.weapon = weapon;
+            this.damage = damage;
+            this.headshot = headshot;
+        }
     }
 }

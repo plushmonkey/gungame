@@ -21,12 +21,13 @@ public class SniperRifle extends AbstractGun {
             if (gunPlayer == null || gunPlayer.isOnCooldown(getName())) return false;
 
             Bullet.Config config = new Bullet.Config();
-            config.speed = 12.0;
-            config.range = 30.0;
+            config.speed = 20.0;
+            config.range = 300.0;
             config.damage = 12.0;
             config.headshotDamage = 24.0;
             config.swimmingDamage = 16.0;
             config.clearNoTicks = true;
+            config.radius = 0.2;
 
             bullets.add(new Bullet(this, config, player, PlayerUtil.getEye(player), player.getEyeLocation().getDirection()));
 

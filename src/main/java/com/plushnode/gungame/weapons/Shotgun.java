@@ -31,6 +31,7 @@ public class Shotgun extends AbstractGun {
         config.headshotDamage = 8.0;
         config.swimmingDamage = 6.0;
         config.clearNoTicks = true;
+        config.radius = 0.1;
 
         gunPlayer.addCooldown(getName(), 1500);
 

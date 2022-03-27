@@ -46,6 +46,7 @@ public class BipodAttachment implements Weapon {
 
         currentBlock = player.getLocation().getBlock();
         player.setSwimming(true);
+        player.setSprinting(false);
 
         return true;
     }

@@ -1,5 +1,6 @@
 package com.plushnode.gungame.weapons;
 
+import com.plushnode.gungame.DamageTracker;
 import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.UpdateResult;
@@ -96,7 +97,8 @@ public class Flamethrower implements Weapon {
 
                     if (lastDamageTime == null || time - lastDamageTime >= 1000) {
                         ((LivingEntity) entity).setNoDamageTicks(0);
-                        GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, this, 4.0);
+
+                        GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(this, 5.0, false));
 
                         damageTimers.put(entity, time);
                     }

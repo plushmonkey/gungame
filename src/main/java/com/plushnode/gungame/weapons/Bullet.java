@@ -1,5 +1,6 @@
 package com.plushnode.gungame.weapons;
 
+import com.plushnode.gungame.DamageTracker;
 import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.collision.CollisionDetector;
 import com.plushnode.gungame.collision.Ray;
@@ -18,7 +19,7 @@ import org.bukkit.util.Vector;
 import java.util.Collections;
 
 public class Bullet {
-    private static AABB HEAD_BOUNDS = new AABB(new Vector3D(-0.3D, 0.0D, -0.3D), new Vector3D(0.3D, 0.4D, 0.3D));
+    private static AABB HEAD_BOUNDS = new AABB(new Vector3D(-0.3, 0.0D, -0.3D), new Vector3D(0.3D, 0.4, 0.3D));
 
     private Weapon weapon;
     private Player shooter;
@@ -80,7 +81,7 @@ public class Bullet {
         Sphere collider = new Sphere(location.toVector(), colliderSize);
 
         boolean collided = CollisionDetector.checkEntityCollisions(shooter, collider, entity -> {
-            AABB hitbox = AABB.fromEntity(entity).at(entity.getLocation());
+            AABB hitbox = AABB.fromEntity(entity).grow(config.radius, config.radius, config.radius).at(entity.getLocation());
 
             AABB.RayIntersection intersectResult = hitbox.intersects(ray);
             if (intersectResult.hit) {
@@ -91,7 +92,8 @@ public class Bullet {
                 int bloodAmount = 50;
                 double damage = config.damage;
 
-                if (isHeadshot(entity, ray)) {
+                boolean headshot = isHeadshot(entity, ray);
+                if (headshot) {
                     damage = config.headshotDamage;
 
                     bloodAmount = 200;
@@ -99,7 +101,7 @@ public class Bullet {
                     damage = config.swimmingDamage;
                 }
 
-                GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, weapon, damage);
+                GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(weapon, damage, headshot));
 
                 if (config.clearNoTicks) {
                     ((LivingEntity)entity).setNoDamageTicks(0);
@@ -119,13 +121,13 @@ public class Bullet {
     private boolean isHeadshot(Entity entity, Ray ray) {
         if (!(entity instanceof Player)) return false;
 
-        Location headLocation = entity.getLocation().clone().add(0, 1.4, 0);
+        Location headLocation = entity.getLocation().clone().add(0, 1.4 + config.radius, 0);
 
         if (((Player) entity).isSneaking()) {
             headLocation.subtract(0, 0.3, 0);
         }
 
-        AABB headCollider = HEAD_BOUNDS.at(headLocation);
+        AABB headCollider = HEAD_BOUNDS.grow(config.radius, config.radius, config.radius).at(headLocation);
 
         return headCollider.intersects(ray).hit;
     }
@@ -147,6 +149,7 @@ public class Bullet {
         double speed;
         double range;
         double damage;
+        double radius;
         double headshotDamage;
         double swimmingDamage;
         boolean clearNoTicks;
