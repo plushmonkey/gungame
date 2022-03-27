@@ -8,12 +8,14 @@ import com.plushnode.gungame.collision.RayCaster;
 import com.plushnode.gungame.collision.volumes.AABB;
 import com.plushnode.gungame.collision.volumes.Sphere;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.Collections;
@@ -52,14 +54,14 @@ public class Bullet {
 
         for (int i = 0; i < 5; ++i) {
             final Ray ray = new Ray(location, direction);
-            RayCaster.CastResult result = RayCaster.cast(location.getWorld(), ray, movement, false, Collections.emptyList());
+            RayTraceResult result = location.getWorld().rayTraceBlocks(location, direction, movement, FluidCollisionMode.NEVER, true);
 
             if (intersectEntities(ray, location, movement)) {
                 return true;
             }
 
-            if (result.hit) {
-                this.location = result.location;
+            if (result != null) {
+                this.location = result.getHitPosition().toLocation(location.getWorld());
 
                 location.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, location, 5,0.1f, 0.1f, 0.1f, 0.0f, null, true);
 
