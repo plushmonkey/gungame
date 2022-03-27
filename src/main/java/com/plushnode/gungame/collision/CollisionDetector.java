@@ -38,11 +38,10 @@ public class CollisionDetector {
         Vector3D pos = collider.getPosition();
         Location location = new Location(world, pos.getX(), pos.getY(), pos.getZ());
 
-        boolean hit = false;
-
         for (Entity entity : location.getWorld().getNearbyEntities(location, extent.getX(), extent.getY(), extent.getZ())) {
             if (entity == player) continue;
             if (entity instanceof ArmorStand) continue;
+            if (entity.isDead()) continue;
 
             if (entity instanceof Player && ((Player) entity).getGameMode().equals(GameMode.SPECTATOR)) {
                 continue;
@@ -58,12 +57,10 @@ public class CollisionDetector {
                 if (callback.onCollision(entity)) {
                     return true;
                 }
-
-                hit = true;
             }
         }
 
-        return hit;
+        return false;
     }
 
     // Checks if the entity is on the ground. Uses NMS bounding boxes for accuracy.

@@ -11,6 +11,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 
 public class BipodAttachment implements Weapon {
@@ -21,6 +22,7 @@ public class BipodAttachment implements Weapon {
     private Block currentBlock;
     private int slot;
     private World world;
+    private ArmorStand armorStand;
 
     @Override
     public boolean activate(Player player, Trigger trigger) {
@@ -47,6 +49,18 @@ public class BipodAttachment implements Weapon {
         currentBlock = player.getLocation().getBlock();
         player.setSwimming(true);
         player.setSprinting(false);
+
+        // Spawn an armor stand that makes the player's display name invisible.
+        armorStand = world.spawn(player.getLocation(), ArmorStand.class, entity -> {
+            entity.setBasePlate(false);
+            entity.setVisible(false);
+            entity.setGravity(true);
+            entity.getLocation().setDirection(player.getLocation().getDirection());
+            entity.setMarker(false);
+            entity.setSmall(true);
+
+            player.addPassenger(entity);
+        });
 
         return true;
     }
@@ -83,6 +97,10 @@ public class BipodAttachment implements Weapon {
     public void destroy() {
         player.sendBlockChange(headBlock.getLocation(), Material.AIR.createBlockData());
         player.setSwimming(false);
+
+        player.removePassenger(armorStand);
+
+        armorStand.remove();
     }
 
     @Override

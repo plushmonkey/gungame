@@ -62,6 +62,7 @@ public class Bullet {
                 this.location = result.location;
 
                 location.getWorld().spawnParticle(Particle.EXPLOSION_NORMAL, location, 5,0.1f, 0.1f, 0.1f, 0.0f, null, true);
+
                 return true;
             }
 
@@ -120,6 +121,7 @@ public class Bullet {
 
     private boolean isHeadshot(Entity entity, Ray ray) {
         if (!(entity instanceof Player)) return false;
+        if (isSwimming(entity)) return false;
 
         Location headLocation = entity.getLocation().clone().add(0, 1.4 + config.radius, 0);
 

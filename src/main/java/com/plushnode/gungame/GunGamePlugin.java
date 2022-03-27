@@ -41,7 +41,7 @@ public class GunGamePlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
+        instanceManager.destroyAllInstances();
     }
 
     public void update() {
