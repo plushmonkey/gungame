@@ -5,10 +5,8 @@ import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.UpdateResult;
 import com.plushnode.gungame.collision.Ray;
-import com.plushnode.gungame.collision.volumes.AABB;
 import com.plushnode.gungame.listeners.PlayerListener;
 import com.plushnode.gungame.util.PlayerUtil;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,7 +20,7 @@ import org.bukkit.util.Vector;
 
 public class Knife implements Weapon {
     private static final float ACTIVATION_ANGLE = 90.0f;
-    private static final int SPEED_AMPLIFIER = 2;
+    private static final int SPEED_AMPLIFIER = 1;
     private World world;
     private Player player;
     private int slot;

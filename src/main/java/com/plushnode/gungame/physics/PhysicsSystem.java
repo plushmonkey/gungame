@@ -5,10 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PhysicsSystem {
     public static final double TIMESTEP = 1000.0 / 20 / 1000.0;
@@ -28,15 +25,21 @@ public class PhysicsSystem {
 
         forceRegistry.updateForces(TIMESTEP);
 
+        List<Particle> removal = new ArrayList<>();
+
         for (int i = 0; i < particles.size(); ++i) {
             Particle particle = particles.get(i);
             Vector3D prevPos = previous.get(i);
             integrator.integrate(particle, TIMESTEP);
             World world = particleWorlds.get(particle);
             if (world != null) {
-                collisionDetector.update(particle, prevPos, world, particle.getRestitution());
+                if (collisionDetector.update(particle, prevPos, world, particle.getRestitution())) {
+                    removal.add(particle);
+                }
             }
         }
+
+        removal.forEach(particles::remove);
     }
 
     public void addParticle(Particle particle, World world) {

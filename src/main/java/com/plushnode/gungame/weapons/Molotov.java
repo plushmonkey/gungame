@@ -5,18 +5,23 @@ import com.plushnode.gungame.physics.Particle;
 import com.plushnode.gungame.util.PlayerUtil;
 import com.plushnode.gungame.util.VectorUtil;
 import com.plushnode.gungame.util.WorldUtil;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class Grenade implements Weapon {
+public class Molotov implements Weapon {
     private List<GrenadeParticle> particles = new ArrayList<>();
     private Player player;
     private World world;
@@ -30,7 +35,7 @@ public class Grenade implements Weapon {
         if (trigger == Trigger.LeftClick || trigger == Trigger.RightClick) {
             boolean handledPunch = false;
 
-            for (Grenade instance : GunGamePlugin.plugin.getInstanceManager().getPlayerInstances(player, Grenade.class)) {
+            for (Molotov instance : GunGamePlugin.plugin.getInstanceManager().getPlayerInstances(player, Molotov.class)) {
                 if (instance.state.onPunch()) {
                     handledPunch = true;
                 }
@@ -92,7 +97,7 @@ public class Grenade implements Weapon {
 
     @Override
     public String getName() {
-        return "Grenade";
+        return "Molotov";
     }
 
     private interface State {
@@ -163,7 +168,7 @@ public class Grenade implements Weapon {
             GunPlayer gunPlayer = GunGamePlugin.plugin.getPlayerManager().getPlayer(player);
 
             if (gunPlayer != null) {
-                gunPlayer.addCooldown(getName(), 5000);
+                gunPlayer.addCooldown(getName(), 10000);
             }
 
             //ItemStack item = player.getInventory().getItemInMainHand();
@@ -191,36 +196,96 @@ public class Grenade implements Weapon {
     }
 
     private class ExplodeState implements State {
+        private final static int RADIUS = 5;
+        private final static float RENDER_SPREAD = 0.25f;
+        private final static double DAMAGE = 4.0;
+        private List<Location> locations = new ArrayList<>();
+        private long lastRenderTime;
+        private long explodeTime;
+        private Location explosionCenter;
+        private Map<Entity, Long> damageMap = new HashMap<>();
+
         ExplodeState() {
-            float size = 5.0f;
-            double damage = 50.0;
+            explodeTime = System.currentTimeMillis();
 
             for (GrenadeParticle particle : particles) {
                 Location location = new Location(world, particle.getPosition().getX(), particle.getPosition().getY(), particle.getPosition().getZ());
 
-                for (Entity e : WorldUtil.getEntitiesAroundPoint(location, size)) {
-                    if (e instanceof LivingEntity) {
-                        GunGamePlugin.plugin.getDamageTracker().applyDamage(e, new DamageTracker.DamageEvent(Grenade.this, damage, false));
+                RayTraceResult result = location.getWorld().rayTraceBlocks(location, new Vector(0, -1, 0), 2.0);
+
+                world.playSound(location, Sound.BLOCK_FIRE_AMBIENT, 4f, 1f);
+
+                if (result == null) continue;
+
+                location = result.getHitPosition().toLocation(location.getWorld());
+                explosionCenter = location.clone().add(0, 1, 0);
+                Location centerTop = location.clone().add(0, 1, 0);
+
+                locations.add(location.add(0.0, 0.25, 0.0));
+
+                for (float z = -RADIUS; z < RADIUS; ++z) {
+                    for (float x = -RADIUS; x < RADIUS; ++x) {
+                        Location current = location.clone().add(x, 0.25, z);
+
+                        if (current.distanceSquared(location) <= RADIUS * RADIUS && current.getBlock().isPassable() && !current.getBlock().isLiquid()) {
+                            Location currentTop = current.clone().add(0, 0.75, 0);
+                            Vector direction = currentTop.subtract(centerTop).toVector();
+
+                            double length = direction.length();
+
+                            if (location.getWorld().rayTraceBlocks(centerTop, direction.normalize(), length) == null) {
+                                locations.add(current);
+                            }
+                        }
                     }
                 }
-
-                world.createExplosion(location, 0.0f, false, false, player);
-                render(location);
             }
         }
 
-        private void render(Location location) {
-            world.spawnParticle(org.bukkit.Particle.FLAME, location, 20, (float) Math.random(), (float) Math.random(), (float) Math.random(), 0.5f, null, true);
-            world.spawnParticle(org.bukkit.Particle.SMOKE_LARGE, location, 20, (float) Math.random(), (float) Math.random(), (float) Math.random(), 0.5f, null, true);
-            world.spawnParticle(org.bukkit.Particle.FIREWORKS_SPARK, location, 20, (float) Math.random(), (float) Math.random(), (float) Math.random(), 0.5f, null, true);
-            world.spawnParticle(org.bukkit.Particle.EXPLOSION_HUGE, location, 5, (float) Math.random(), (float) Math.random(), (float) Math.random(), 0.5f, null, true);
+        private void renderFire() {
+            long time = System.currentTimeMillis();
 
-            world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f);
+            if (time - lastRenderTime >= 150) {
+                RealDistribution distribution = new NormalDistribution(0.0f, 30.0f);
+
+                for (Location location : locations) {
+                    int sample = (int)Math.abs(distribution.sample()) % 40;
+
+                    float hue = sample / 360.0f;
+                    int rgb = java.awt.Color.HSBtoRGB(hue, 1.0f, 1.0f);
+                    java.awt.Color color = new java.awt.Color(rgb);
+                    Color dustColor = Color.fromRGB(color.getRed(), color.getGreen(), color.getBlue());
+
+                    org.bukkit.Particle.DustOptions dustOptions = new org.bukkit.Particle.DustOptions(dustColor, 2.0f);
+
+                    world.spawnParticle(org.bukkit.Particle.REDSTONE, location, 1, RENDER_SPREAD, RENDER_SPREAD, RENDER_SPREAD, 0.001f, dustOptions, true);
+                }
+
+                lastRenderTime = time;
+            }
         }
 
         @Override
         public boolean update() {
-            return false;
+            long time = System.currentTimeMillis();
+            renderFire();
+
+            for (LivingEntity entity : WorldUtil.getEntitiesAroundPoint(explosionCenter, RADIUS + 1)) {
+                Long lastHitTime = damageMap.get(entity);
+
+                // Put a delay on player damage per second
+                if (lastHitTime != null && time - lastHitTime < 1000) continue;
+
+                for (Location location : locations) {
+                    if (BoundingBox.of(location.getBlock()).overlaps(entity.getBoundingBox())) {
+                        GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(Molotov.this, DAMAGE, false));
+                        damageMap.put(entity, time);
+                        break;
+                    }
+                }
+            }
+
+            return System.currentTimeMillis() - explodeTime < 7000 && !locations.isEmpty();
         }
 
         @Override
@@ -230,12 +295,15 @@ public class Grenade implements Weapon {
     }
 
     private class GrenadeParticle extends Particle {
+        private static final float ROTATION_SPEED = 2*3.14f / 10.0f;
         Vector3D prevPos;
+        float rotation;
 
         public GrenadeParticle(Vector3D position, double mass) {
             super(position, mass);
 
             this.prevPos = getPosition();
+            this.rotation = 0.0f;
 
             GunGamePlugin.plugin.getPhysicsSystem().addParticle(this, player.getWorld());
         }
@@ -247,11 +315,8 @@ public class Grenade implements Weapon {
 
             Vector travel = location.clone().subtract(prevLocation).toVector();
 
-            int red = 90;
-            int green = 78;
-            int blue = 36;
-
-            Color color = Color.fromRGB(red, green, blue);
+            Color bottleColor = Color.fromRGB(24, 141, 86);
+            Color fireColor = Color.fromRGB(215, 28, 6);
 
             double increment = 0.3;
 
@@ -259,20 +324,44 @@ public class Grenade implements Weapon {
                 increment = 1.0;
             }
 
+            Vector worldUp = new Vector(0, 1, 0);
+            Vector direction = travel.clone().normalize().setY(0).normalize();
+            Vector rotateAxis = worldUp.clone().crossProduct(direction).normalize();
+
             for (double t = 0; t < 1.0; t += increment) {
                 // Interpolate between the two positions to render multiple times.
-                Location renderLocation = prevLocation.clone().add(travel.clone().multiply(t));
+                Location bottleLocation = prevLocation.clone().add(travel.clone().multiply(t));
 
                 player.getWorld().spawnParticle(org.bukkit.Particle.REDSTONE,
-                        renderLocation, 0, red, green, blue, 0.005f, new org.bukkit.Particle.DustOptions(color, 1.0f),
+                        bottleLocation, 1, 0.001f, 0.001f, 0.001f, 0.001f, new org.bukkit.Particle.DustOptions(bottleColor, 1.0f),
+                        true);
+
+                Vector offset = worldUp.clone().rotateAroundAxis(rotateAxis, rotation + t * ROTATION_SPEED);
+                Location fireLocation = bottleLocation.clone().add(offset.clone().multiply(0.35f));
+
+                player.getWorld().spawnParticle(org.bukkit.Particle.REDSTONE,
+                        fireLocation, 1, 0.001f, 0.001f, 0.001f, 0.001f, new org.bukkit.Particle.DustOptions(fireColor, 1.0f),
                         true);
             }
+
+            rotation += ROTATION_SPEED;
 
             prevPos = pos;
         }
 
         public void remove() {
             GunGamePlugin.plugin.getPhysicsSystem().removeParticle(this);
+        }
+
+        @Override
+        public boolean resolveCollision(Vector3D normal) {
+            double explodeSlope = Math.cos(Math.toRadians(30.0f));
+
+            if (normal.dotProduct(Vector3D.PLUS_J) >= explodeSlope) {
+                state = new ExplodeState();
+                return true;
+            }
+            return super.resolveCollision(normal);
         }
     }
 }

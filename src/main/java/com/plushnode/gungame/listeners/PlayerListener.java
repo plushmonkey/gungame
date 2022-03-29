@@ -240,6 +240,8 @@ public class PlayerListener implements Listener {
             return new SniperRifle();
         } else if ("knife".equalsIgnoreCase(weaponType)) {
             return new Knife();
+        } else if ("molotov".equalsIgnoreCase(weaponType)) {
+            return new Molotov();
         }
 
         return null;

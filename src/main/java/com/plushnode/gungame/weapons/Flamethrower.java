@@ -71,7 +71,7 @@ public class Flamethrower implements Weapon {
         integrate();
 
         // TODO: Could calculate nearby range from density map
-        Collection<Entity> nearbyEntities = WorldUtil.getEntitiesAroundPoint(player.getLocation(), 60);
+        Collection<LivingEntity> nearbyEntities = WorldUtil.getEntitiesAroundPoint(player.getLocation(), 60);
 
         for (Map.Entry<BlockVector, DensityInformation> entry : densityMap.entrySet()) {
             DensityInformation info = entry.getValue();
@@ -81,7 +81,7 @@ public class Flamethrower implements Weapon {
             Location location = info.averageLocation.clone().multiply(1.0f / info.count);
             BoundingBox collider = BoundingBox.of(location.getBlock());
 
-            for (Entity entity : nearbyEntities) {
+            for (LivingEntity entity : nearbyEntities) {
                 if (entity == player) continue;
 
                 if (entity.getBoundingBox().overlaps(collider)) {
@@ -97,7 +97,7 @@ public class Flamethrower implements Weapon {
                     Long lastDamageTime = damageTimers.get(entity);
 
                     if (lastDamageTime == null || time - lastDamageTime >= 1000) {
-                        ((LivingEntity) entity).setNoDamageTicks(0);
+                        entity.setNoDamageTicks(0);
 
                         GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(this, DAMAGE_PER_SECOND, false));
 

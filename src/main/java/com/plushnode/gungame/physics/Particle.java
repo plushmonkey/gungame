@@ -107,4 +107,10 @@ public class Particle {
     public void setRestitution(double restitution) {
         this.restitution = restitution;
     }
+
+    public boolean resolveCollision(Vector3D normal) {
+        ParticleContact contact = new ParticleContact(this, null, restitution, normal);
+        contact.resolve(PhysicsSystem.TIMESTEP);
+        return false;
+    }
 }

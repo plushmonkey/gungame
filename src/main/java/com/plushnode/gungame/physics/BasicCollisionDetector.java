@@ -10,9 +10,9 @@ import java.util.Collections;
 
 // Detect and resolve particle-world contacts
 public class BasicCollisionDetector {
-    public void update(Particle particle, Vector3D prevPos, World world, double restitution) {
+    public boolean update(Particle particle, Vector3D prevPos, World world, double restitution) {
         Vector3D movement = particle.getPosition().subtract(prevPos);
-        if (movement.getNormSq() <= 0.0) return;
+        if (movement.getNormSq() <= 0.0) return false;
 
         Ray ray = new Ray(prevPos, movement.normalize());
 
@@ -24,8 +24,9 @@ public class BasicCollisionDetector {
 
             particle.setPosition(hitPosition);
 
-            ParticleContact contact = new ParticleContact(particle, null, restitution, result.normal);
-            contact.resolve(PhysicsSystem.TIMESTEP);
+            return particle.resolveCollision(result.normal);
         }
+
+        return false;
     }
 }

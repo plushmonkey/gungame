@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public final class PlayerUtil {
     private static AABB HEAD_BOUNDS = new AABB(new Vector3D(-0.3, 0.0D, -0.3D), new Vector3D(0.3D, 0.4, 0.3D));
@@ -61,5 +62,13 @@ public final class PlayerUtil {
         final float bloodSpeed = 1.25f;
 
         location.getWorld().spawnParticle(Particle.BLOCK_DUST, location, bloodAmount, bloodSpread, bloodSpread, bloodSpread, bloodSpeed, Material.REDSTONE_BLOCK.createBlockData(), true);
+    }
+
+    public static boolean consumeItem(Player player, ItemStack item) {
+        ItemStack removeRequest = item.clone();
+
+        removeRequest.setAmount(1);
+
+        return player.getInventory().removeItem(removeRequest).isEmpty();
     }
 }

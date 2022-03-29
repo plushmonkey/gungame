@@ -101,7 +101,7 @@ public class CreateCommand implements MultiplexableCommand {
             applyWeapon(item, "Bipod", false);
 
             applyDescription(item, ChatColor.GREEN + "Left-click to activate scope and bipod. Right-click to shoot.");
-            applyDescription(item, ChatColor.RED + "Requires client 1.13+ to function. Use normal Sniper with older client.");
+            applyDescription(item, ChatColor.RED + "Requires client 1.14+ to function. Use normal Sniper with older client.");
 
             player.getInventory().addItem(item);
         } else if ("knife".equalsIgnoreCase(weaponName)) {
@@ -111,6 +111,16 @@ public class CreateCommand implements MultiplexableCommand {
 
             applyDescription(item, ChatColor.GREEN + "Provides speed while wielding.");
             applyDescription(item, ChatColor.GREEN + "Headshot and backstab attacks instantly kill.");
+
+            player.getInventory().addItem(item);
+        } else if ("molotov".equalsIgnoreCase(weaponName)) {
+            ItemStack item = new ItemStack(Material.MAGMA_CREAM, 1);
+
+            applyWeapon(item, "Molotov", true);
+
+            applyDescription(item, ChatColor.GREEN + "Left-click to throw.");
+            applyDescription(item, ChatColor.GREEN + "Optionally hold sneak before throwing to set throw strength.");
+            applyDescription(item, ChatColor.GREEN + "Sets the ground ablaze on impact.");
 
             player.getInventory().addItem(item);
         }
