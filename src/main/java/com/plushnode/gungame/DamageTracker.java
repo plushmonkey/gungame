@@ -24,8 +24,32 @@ public class DamageTracker {
         }
     }
 
+    public void applyEvent(Entity entity, DamageEvent event) {
+        if (entity instanceof Player) {
+            currentDamage.put((Player)entity, event);
+        }
+    }
+
     public void clearPlayer(Player player) {
         currentDamage.remove(player);
+    }
+
+    public void clearPlayerType(Player player, Class<?> clazz) {
+        DamageEvent event = currentDamage.get(player);
+
+        if (event != null && event.weapon.getClass() == clazz) {
+            currentDamage.remove(player);
+        }
+    }
+
+    public boolean isDamaging(Player player) {
+        for (DamageEvent event : currentDamage.values()) {
+            if (event.weapon.getPlayer() == player) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void handleDeath(PlayerDeathEvent event) {
@@ -40,24 +64,38 @@ public class DamageTracker {
         String shooter = damageEvent.weapon.getPlayer().getName();
 
         String headshotIndicator = "";
+        String knifeIndicator = "";
 
         if (damageEvent.headshot) {
             headshotIndicator = "*";
         }
+        if (damageEvent.knifeBackstab) {
+            knifeIndicator = "*";
+        }
 
-        String message = name + " was slain by " + shooter + " using [" + weaponName + headshotIndicator + "]";
+        String message = name + " was slain by " + shooter + " using [" + knifeIndicator + weaponName + headshotIndicator + "]";
         event.setDeathMessage(message);
+
+        currentDamage.remove(event.getEntity());
     }
 
     public static class DamageEvent {
         Weapon weapon;
         double damage;
         boolean headshot;
+        boolean knifeBackstab;
 
         public DamageEvent(Weapon weapon, double damage, boolean headshot) {
             this.weapon = weapon;
             this.damage = damage;
             this.headshot = headshot;
+        }
+
+        public DamageEvent(Weapon weapon, double damage, boolean headshot, boolean knifeBackstab) {
+            this.weapon = weapon;
+            this.damage = damage;
+            this.headshot = headshot;
+            this.knifeBackstab = knifeBackstab;
         }
     }
 }

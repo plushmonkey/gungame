@@ -4,4 +4,5 @@ public enum Trigger {
     LeftClick,
     RightClick,
     Sneak,
+    HotbarSwap
 }

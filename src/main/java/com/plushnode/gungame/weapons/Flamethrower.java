@@ -28,6 +28,7 @@ public class Flamethrower implements Weapon {
     private static final double SPAWN_DENSITY = 1.3;
     private static final double SPAWN_DRAG = 0.9;
     private static final float RENDER_SPREAD = 0.2f;
+    private static final float DAMAGE_PER_SECOND = 8.0f;
 
     private Player player;
 
@@ -86,8 +87,8 @@ public class Flamethrower implements Weapon {
                 if (entity.getBoundingBox().overlaps(collider)) {
                     double percent = info.density / maxDensity;
 
-                    int ticks = 20 + (int)(percent * 80);
-                    if (ticks > 80) ticks = 80;
+                    int ticks = 30 + (int)(percent * 80);
+                    if (ticks > 90) ticks = 90;
 
                     if (entity.getFireTicks() < ticks) {
                         entity.setFireTicks(ticks);
@@ -98,7 +99,7 @@ public class Flamethrower implements Weapon {
                     if (lastDamageTime == null || time - lastDamageTime >= 1000) {
                         ((LivingEntity) entity).setNoDamageTicks(0);
 
-                        GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(this, 5.0, false));
+                        GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(this, DAMAGE_PER_SECOND, false));
 
                         damageTimers.put(entity, time);
                     }

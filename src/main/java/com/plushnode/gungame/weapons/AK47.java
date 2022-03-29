@@ -49,12 +49,12 @@ public class AK47 extends AbstractGun {
         Bullet.Config config = new Bullet.Config();
 
         config.speed = 14.0;
-        config.range = 120.0;
+        config.range = 50.0;
         config.damage = 4.0;
         config.headshotDamage = 10.0;
         config.swimmingDamage = 6.0;
         config.clearNoTicks = false;
-        config.radius = 0.3;
+        config.radius = 0.2;
 
         bullets.add(new Bullet(this, config, player, PlayerUtil.getEye(player), player.getEyeLocation().getDirection()));
 

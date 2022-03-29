@@ -4,25 +4,19 @@ import com.plushnode.gungame.DamageTracker;
 import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.collision.CollisionDetector;
 import com.plushnode.gungame.collision.Ray;
-import com.plushnode.gungame.collision.RayCaster;
 import com.plushnode.gungame.collision.volumes.AABB;
 import com.plushnode.gungame.collision.volumes.Sphere;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import com.plushnode.gungame.util.PlayerUtil;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import java.util.Collections;
-
 public class Bullet {
-    private static AABB HEAD_BOUNDS = new AABB(new Vector3D(-0.3, 0.0D, -0.3D), new Vector3D(0.3D, 0.4, 0.3D));
-
     private Weapon weapon;
     private Player shooter;
     private Location location;
@@ -95,12 +89,12 @@ public class Bullet {
                 int bloodAmount = 50;
                 double damage = config.damage;
 
-                boolean headshot = isHeadshot(entity, ray);
+                boolean headshot = PlayerUtil.isHeadshot(entity, ray, config.radius);
                 if (headshot) {
                     damage = config.headshotDamage;
 
                     bloodAmount = 200;
-                } else if (isSwimming(entity)) {
+                } else if (PlayerUtil.isSwimming(entity)) {
                     damage = config.swimmingDamage;
                 }
 
@@ -110,7 +104,7 @@ public class Bullet {
                     ((LivingEntity)entity).setNoDamageTicks(0);
                 }
 
-                renderBlood(hitLocation, bloodAmount);
+                PlayerUtil.renderBlood(hitLocation, bloodAmount);
 
                 return true;
             }
@@ -119,34 +113,6 @@ public class Bullet {
         });
 
         return collided;
-    }
-
-    private boolean isHeadshot(Entity entity, Ray ray) {
-        if (!(entity instanceof Player)) return false;
-        if (isSwimming(entity)) return false;
-
-        Location headLocation = entity.getLocation().clone().add(0, 1.4 + config.radius, 0);
-
-        if (((Player) entity).isSneaking()) {
-            headLocation.subtract(0, 0.3, 0);
-        }
-
-        AABB headCollider = HEAD_BOUNDS.grow(config.radius, config.radius, config.radius).at(headLocation);
-
-        return headCollider.intersects(ray).hit;
-    }
-
-    private boolean isSwimming(Entity entity) {
-        if (!(entity instanceof Player)) return false;
-
-        return ((Player) entity).isSwimming();
-    }
-
-    protected void renderBlood(Location location, int bloodAmount) {
-        final float bloodSpread = 0.1f;
-        final float bloodSpeed = 1.25f;
-
-        location.getWorld().spawnParticle(Particle.BLOCK_DUST, location, bloodAmount, bloodSpread, bloodSpread, bloodSpread, bloodSpeed, Material.REDSTONE_BLOCK.createBlockData(), true);
     }
 
     public static class Config {

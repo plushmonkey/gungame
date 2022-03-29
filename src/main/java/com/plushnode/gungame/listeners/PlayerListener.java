@@ -1,5 +1,6 @@
 package com.plushnode.gungame.listeners;
 
+import com.plushnode.gungame.DamageTracker;
 import com.plushnode.gungame.GunGamePlugin;
 import com.plushnode.gungame.Trigger;
 import com.plushnode.gungame.attachments.BipodAttachment;
@@ -13,17 +14,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityToggleSwimEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class PlayerListener implements Listener {
+    private static SwapAction currentSwap;
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         GunGamePlugin.plugin.getPlayerManager().createPlayer(event.getPlayer());
+
+        activateWeapon(event.getPlayer(), Trigger.HotbarSwap);
     }
 
     @EventHandler
@@ -33,6 +36,13 @@ public class PlayerListener implements Listener {
 
         // Not really necessary, but remove them just in case there's an accidental accumulation.
         GunGamePlugin.plugin.getDamageTracker().clearPlayer(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if (!event.getFrom().getWorld().equals(event.getTo().getWorld())) {
+            GunGamePlugin.plugin.getInstanceManager().destroyPlayerInstances(event.getPlayer());
+        }
     }
 
     @EventHandler
@@ -91,6 +101,45 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
+    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
+        int newSlot = event.getNewSlot();
+
+        ItemStack item = event.getPlayer().getInventory().getItem(newSlot);
+        if (item != null && isWeapon(item)) {
+            currentSwap =  new SwapAction(event.getPlayer(), newSlot);
+            activateWeapon(event.getPlayer(), Trigger.HotbarSwap, item);
+            currentSwap = null;
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onPlayerDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player)) return;
+        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK) return;
+
+        Player damager = (Player)event.getDamager();
+
+        // Minimize swaps from other types of damage.
+        if (damager.getLocation().distanceSquared(event.getEntity().getLocation()) > 15 * 15) return;
+
+        // Prevent projectiles/explosives from triggering as a knife with a swap.
+        if (!GunGamePlugin.plugin.getDamageTracker().isDamaging(damager)) {
+            Knife instance = GunGamePlugin.plugin.getInstanceManager().getFirstInstance(damager, Knife.class);
+
+            if (instance != null) {
+                instance.applyDamage(event);
+            }
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onPlayerItemDamage(PlayerItemDamageEvent event) {
+        if (isWeapon(event.getItem())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         if (!(event.getEntity().getShooter() instanceof Player)) return;
         Player player = (Player)event.getEntity().getShooter();
@@ -119,10 +168,30 @@ public class PlayerListener implements Listener {
         activateWeapon(event.getPlayer(), Trigger.Sneak);
     }
 
-
     private boolean activateWeapon(Player player, Trigger trigger) {
         ItemStack item = player.getInventory().getItemInMainHand();
 
+        return activateWeapon(player, trigger, item);
+    }
+
+    public boolean isWeapon(ItemStack item) {
+        if (!item.hasItemMeta()) return false;
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null || !meta.hasLore()) return false;
+        if (meta.getLore().isEmpty()) return false;
+
+        for (String lore : meta.getLore()) {
+            if (lore.startsWith("gg:")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean activateWeapon(Player player, Trigger trigger, ItemStack item) {
         if (!item.hasItemMeta()) return false;
 
         ItemMeta meta = item.getItemMeta();
@@ -169,8 +238,28 @@ public class PlayerListener implements Listener {
             return new Flamethrower();
         } else if ("sniper".equalsIgnoreCase(weaponType)) {
             return new SniperRifle();
+        } else if ("knife".equalsIgnoreCase(weaponType)) {
+            return new Knife();
         }
 
         return null;
+    }
+
+    public static int getPlayerSlot(Player player) {
+        if (currentSwap != null && currentSwap.player == player) {
+            return currentSwap.newSlot;
+        }
+
+        return player.getInventory().getHeldItemSlot();
+    }
+
+    private static class SwapAction {
+        Player player;
+        int newSlot;
+
+        private SwapAction(Player player, int slot) {
+            this.player = player;
+            this.newSlot = slot;
+        }
     }
 }

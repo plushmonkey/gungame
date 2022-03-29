@@ -55,6 +55,8 @@ public class CreateCommand implements MultiplexableCommand {
 
             applyWeapon(item, "Shotgun", true);
 
+            applyDescription(item, ChatColor.GREEN + "Left-click or right-click to shoot.");
+
             player.getInventory().addItem(item);
         } else if ("ak47".equalsIgnoreCase(weaponName)) {
             ItemStack item = new ItemStack(Material.STICK, 1);
@@ -62,11 +64,16 @@ public class CreateCommand implements MultiplexableCommand {
             applyWeapon(item, "AK47", true);
             applyWeapon(item, "Scope", false);
 
+            applyDescription(item, ChatColor.GREEN + "Left-click to activate scope. Hold right-click to shoot.");
+
             player.getInventory().addItem(item);
         } else if ("grenade".equalsIgnoreCase(weaponName)) {
             ItemStack item = new ItemStack(Material.GUNPOWDER, 1);
 
             applyWeapon(item, "Grenade", true);
+
+            applyDescription(item, ChatColor.GREEN + "Left-click to throw grenade.");
+            applyDescription(item, ChatColor.GREEN + "Optionally hold sneak before throwing to set throw strength.");
 
             player.getInventory().addItem(item);
         } else if ("flamethrower".equalsIgnoreCase(weaponName)) {
@@ -74,13 +81,16 @@ public class CreateCommand implements MultiplexableCommand {
 
             applyWeapon(item, "Flamethrower", true);
 
+            applyDescription(item, ChatColor.GREEN + "Hold sneak to activate.");
+
             player.getInventory().addItem(item);
         } else if ("sniper".equalsIgnoreCase(weaponName)) {
             ItemStack item = new ItemStack(Material.STONE_HOE, 1);
 
             applyWeapon(item, "Sniper", true);
             applyWeapon(item, "NightScope", false);
-            //applyWeapon(item, "Bipod", false);
+
+            applyDescription(item, ChatColor.GREEN + "Left-click to activate scope. Right-click to shoot.");
 
             player.getInventory().addItem(item);
         } else if ("bipodsniper".equalsIgnoreCase(weaponName)) {
@@ -89,6 +99,18 @@ public class CreateCommand implements MultiplexableCommand {
             applyWeapon(item, "Sniper", true);
             applyWeapon(item, "NightScope", false);
             applyWeapon(item, "Bipod", false);
+
+            applyDescription(item, ChatColor.GREEN + "Left-click to activate scope and bipod. Right-click to shoot.");
+            applyDescription(item, ChatColor.RED + "Requires client 1.13+ to function. Use normal Sniper with older client.");
+
+            player.getInventory().addItem(item);
+        } else if ("knife".equalsIgnoreCase(weaponName)) {
+            ItemStack item = new ItemStack(Material.IRON_SWORD, 1);
+
+            applyWeapon(item, "Knife", true);
+
+            applyDescription(item, ChatColor.GREEN + "Provides speed while wielding.");
+            applyDescription(item, ChatColor.GREEN + "Headshot and backstab attacks instantly kill.");
 
             player.getInventory().addItem(item);
         }
@@ -117,6 +139,25 @@ public class CreateCommand implements MultiplexableCommand {
 
         meta.setLore(lore);
 
+        item.setItemMeta(meta);
+    }
+
+    private void applyDescription(ItemStack item, String description) {
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) return;
+
+        List<String> lore;
+
+        if (meta.hasLore()) {
+            lore = meta.getLore();
+        } else {
+            lore = new ArrayList<>();
+        }
+
+        lore.add(description);
+
+        meta.setLore(lore);
         item.setItemMeta(meta);
     }
 
