@@ -9,6 +9,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -229,12 +230,18 @@ public class Molotov implements Weapon {
 
                         if (current.distanceSquared(location) <= RADIUS * RADIUS && current.getBlock().isPassable() && !current.getBlock().isLiquid()) {
                             Location currentTop = current.clone().add(0, 0.75, 0);
-                            Vector direction = currentTop.subtract(centerTop).toVector();
+                            Vector direction = currentTop.clone().subtract(centerTop).toVector();
 
                             double length = direction.length();
 
                             if (location.getWorld().rayTraceBlocks(centerTop, direction.normalize(), length) == null) {
-                                locations.add(current);
+                                RayTraceResult currentResult = location.getWorld().rayTraceBlocks(currentTop, new Vector(0, -1, 0), RADIUS);
+
+                                if (currentResult != null) {
+                                    current = currentResult.getHitPosition().toLocation(location.getWorld());
+                                    current.add(0, 0.75, 0);
+                                    locations.add(current);
+                                }
                             }
                         }
                     }

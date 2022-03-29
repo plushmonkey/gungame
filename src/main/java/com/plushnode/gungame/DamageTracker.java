@@ -13,6 +13,8 @@ public class DamageTracker {
     private Map<Player, DamageEvent> currentDamage = new HashMap<>();
 
     public void applyDamage(Entity entity, DamageEvent event) {
+        if (entity.isDead()) return;
+
         if (entity instanceof Player) {
             currentDamage.put((Player)entity, event);
         }
