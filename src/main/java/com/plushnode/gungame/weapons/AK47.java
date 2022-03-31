@@ -49,7 +49,7 @@ public class AK47 extends AbstractGun {
         Bullet.Config config = new Bullet.Config();
 
         config.speed = 14.0;
-        config.range = 50.0;
+        config.range = 45.0;
         config.damage = 4.0;
         config.headshotDamage = 10.0;
         config.swimmingDamage = 6.0;

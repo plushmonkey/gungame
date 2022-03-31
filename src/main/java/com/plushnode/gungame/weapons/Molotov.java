@@ -199,7 +199,7 @@ public class Molotov implements Weapon {
     private class ExplodeState implements State {
         private final static int RADIUS = 5;
         private final static float RENDER_SPREAD = 0.25f;
-        private final static double DAMAGE = 4.0;
+        private final static double DAMAGE = 5.0;
         private List<Location> locations = new ArrayList<>();
         private long lastRenderTime;
         private long explodeTime;
@@ -214,11 +214,17 @@ public class Molotov implements Weapon {
 
                 RayTraceResult result = location.getWorld().rayTraceBlocks(location, new Vector(0, -1, 0), 2.0);
 
-                world.playSound(location, Sound.BLOCK_FIRE_AMBIENT, 4f, 1f);
+                world.playSound(location, Sound.BLOCK_GLASS_BREAK, 4f, 1.5f);
 
                 if (result == null) continue;
 
                 location = result.getHitPosition().toLocation(location.getWorld());
+
+                // Raise the location up if it lands on an impassable block so it's not completely obstructed.
+                if (!location.getBlock().isPassable() && location.getBlock().getRelative(BlockFace.UP).isPassable()) {
+                    location.add(0, 1, 0);
+                }
+
                 explosionCenter = location.clone().add(0, 1, 0);
                 Location centerTop = location.clone().add(0, 1, 0);
 
@@ -285,6 +291,7 @@ public class Molotov implements Weapon {
 
                 for (Location location : locations) {
                     if (BoundingBox.of(location.getBlock()).overlaps(entity.getBoundingBox())) {
+                        entity.setNoDamageTicks(0);
                         GunGamePlugin.plugin.getDamageTracker().applyDamage(entity, new DamageTracker.DamageEvent(Molotov.this, DAMAGE, false));
                         damageMap.put(entity, time);
                         break;
